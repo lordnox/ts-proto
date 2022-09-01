@@ -116,6 +116,7 @@ export function generateFile(ctx: Context, fileDesc: FileDescriptorProto): [stri
 
   // Syntax, unlike most fields, is not repeated and thus does not use an index
   const sourceInfo = SourceInfo.fromDescriptor(fileDesc);
+  console.log(sourceInfo)
   const headerComment = sourceInfo.lookup(Fields.file.syntax, undefined);
   maybeAddComment(headerComment, chunks, fileDesc.options?.deprecated);
 
