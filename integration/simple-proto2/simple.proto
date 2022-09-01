@@ -8,4 +8,5 @@ enum EnumWithoutZero {
 
 message Issue56 {
   required EnumWithoutZero test = 1;
+  optional EnumWithoutZero val2 = 2;
 }

@@ -342,6 +342,11 @@ export function isOptionalProperty(
   messageOptions: MessageOptions | undefined,
   options: Options
 ): boolean {
+  if (options.useOptionals === "label") {
+    if (field.label === FieldDescriptorProto_Label.LABEL_OPTIONAL) return true;
+    if (field.label === FieldDescriptorProto_Label.LABEL_REQUIRED) return false;
+  }
+
   const optionalMessages =
     options.useOptionals === true || options.useOptionals === "messages" || options.useOptionals === "all";
   const optionalAll = options.useOptionals === "all";
