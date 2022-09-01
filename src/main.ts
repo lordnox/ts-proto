@@ -1033,13 +1033,14 @@ function generateEncode(ctx: Context, fullName: string, messageDesc: DescriptorP
       if (isMapType(ctx, messageDesc, field)) {
         const valueType = (typeMap.get(field.typeName)![2] as DescriptorProto).field[1];
         const maybeTypeField = options.outputTypeRegistry ? `$type: '${field.typeName.slice(1)}',` : "";
-        const entryWriteSnippet = isValueType(ctx, valueType)
-          ? code`
+        const entryWriteSnippet =
+          isOptional && isValueType(ctx, valueType)
+            ? code`
               if (value !== undefined) {
                 ${writeSnippet(`{ ${maybeTypeField} key: key as any, value }`)};
               }
             `
-          : writeSnippet(`{ ${maybeTypeField} key: key as any, value }`);
+            : writeSnippet(`{ ${maybeTypeField} key: key as any, value }`);
         const optionalAlternative = isOptional ? " || {}" : "";
         chunks.push(code`
           Object.entries(message.${fieldName}${optionalAlternative}).forEach(([key, value]) => {
@@ -1106,30 +1107,46 @@ function generateEncode(ctx: Context, fullName: string, messageDesc: DescriptorP
       }
     } else if (isWithinOneOfThatShouldBeUnion(options, field)) {
       let oneofName = maybeSnakeToCamel(messageDesc.oneofDecl[field.oneofIndex].name, options);
-      chunks.push(code`
+      if (isOptional) {
+        chunks.push(code`
         if (message.${oneofName}?.$case === '${fieldName}') {
           ${writeSnippet(`message.${oneofName}.${fieldName}`)};
         }
-      `);
+        `);
+      } else {
+        chunks.push(writeSnippet(`message.${oneofName}.${fieldName}`));
+      }
     } else if (isWithinOneOf(field)) {
       // Oneofs don't have a default value check b/c they need to denote which-oneof presence
-      chunks.push(code`
+      if (isOptional) {
+        chunks.push(code`
         if (message.${fieldName} !== undefined) {
           ${writeSnippet(`message.${fieldName}`)};
         }
       `);
+      } else {
+        chunks.push(writeSnippet(`message.${fieldName}`));
+      }
     } else if (isMessage(field)) {
-      chunks.push(code`
+      if (isOptional) {
+        chunks.push(code`
         if (message.${fieldName} !== undefined) {
           ${writeSnippet(`message.${fieldName}`)};
         }
       `);
+      } else {
+        chunks.push(writeSnippet(`message.${fieldName}`));
+      }
     } else if (isScalar(field) || isEnum(field)) {
-      chunks.push(code`
+      if (isOptional) {
+        chunks.push(code`
         if (${notDefaultCheck(ctx, field, messageDesc.options, `message.${fieldName}`)}) {
           ${writeSnippet(`message.${fieldName}`)};
         }
       `);
+      } else {
+        chunks.push(writeSnippet(`message.${fieldName}`));
+      }
     } else {
       chunks.push(code`${writeSnippet(`message.${fieldName}`)};`);
     }

@@ -38,16 +38,18 @@ export function enumWithoutZeroToJSON(object: EnumWithoutZero): string {
 
 export interface Issue56 {
   test: EnumWithoutZero;
+  val2?: EnumWithoutZero;
 }
 
 function createBaseIssue56(): Issue56 {
-  return { test: 1 };
+  return { test: 1, val2: 1 };
 }
 
 export const Issue56 = {
   encode(message: Issue56, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
-    if (message.test !== 1) {
-      writer.uint32(8).int32(message.test);
+    writer.uint32(8).int32(message.test);
+    if (message.val2 !== undefined && message.val2 !== 1) {
+      writer.uint32(16).int32(message.val2);
     }
     return writer;
   },
@@ -62,6 +64,9 @@ export const Issue56 = {
         case 1:
           message.test = reader.int32() as any;
           break;
+        case 2:
+          message.val2 = reader.int32() as any;
+          break;
         default:
           reader.skipType(tag & 7);
           break;
@@ -71,18 +76,23 @@ export const Issue56 = {
   },
 
   fromJSON(object: any): Issue56 {
-    return { test: isSet(object.test) ? enumWithoutZeroFromJSON(object.test) : 1 };
+    return {
+      test: isSet(object.test) ? enumWithoutZeroFromJSON(object.test) : 1,
+      val2: isSet(object.val2) ? enumWithoutZeroFromJSON(object.val2) : 1,
+    };
   },
 
   toJSON(message: Issue56): unknown {
     const obj: any = {};
     message.test !== undefined && (obj.test = enumWithoutZeroToJSON(message.test));
+    message.val2 !== undefined && (obj.val2 = enumWithoutZeroToJSON(message.val2));
     return obj;
   },
 
   fromPartial<I extends Exact<DeepPartial<Issue56>, I>>(object: I): Issue56 {
     const message = createBaseIssue56();
     message.test = object.test ?? 1;
+    message.val2 = object.val2 ?? 1;
     return message;
   },
 };
